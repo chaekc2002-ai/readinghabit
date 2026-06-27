@@ -7,12 +7,15 @@ const BOOKS_KEY = 'reading_app_books';
 const USER_TIMERS_KEY = 'reading_app_user_timers';
 
 // -- Teacher Auth --
-export const registerTeacher = (id, password, name) => {
+export const registerTeacher = (id, password, name, classCode) => {
   const teachers = JSON.parse(localStorage.getItem(TEACHERS_KEY) || '[]');
   if (teachers.find(t => t.id === id)) {
     return { success: false, message: '이미 존재하는 아이디입니다.' };
   }
-  teachers.push({ id, password, name });
+  if (teachers.find(t => t.classCode === classCode)) {
+    return { success: false, message: '이미 다른 선생님이 사용 중인 학급 코드입니다.' };
+  }
+  teachers.push({ id, password, name, classCode });
   localStorage.setItem(TEACHERS_KEY, JSON.stringify(teachers));
   return { success: true };
 };
@@ -45,6 +48,18 @@ export const getTeacherName = (id) => {
   return teacher ? teacher.name : null;
 };
 
+export const getTeacherClassCode = (id) => {
+  const teachers = JSON.parse(localStorage.getItem(TEACHERS_KEY) || '[]');
+  const teacher = teachers.find(t => t.id === id);
+  return teacher ? teacher.classCode : null;
+};
+
+export const getTeacherIdByClassCode = (classCode) => {
+  const teachers = JSON.parse(localStorage.getItem(TEACHERS_KEY) || '[]');
+  const teacher = teachers.find(t => t.classCode === classCode);
+  return teacher ? teacher.id : null;
+};
+
 // -- Student Management --
 export const isSetupDone = (teacherId) => {
   const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
@@ -53,7 +68,6 @@ export const isSetupDone = (teacherId) => {
 
 export const setupStudents = (teacherId, count) => {
   let allUsers = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-  // Remove existing students for this teacher
   allUsers = allUsers.filter(u => u.teacherId !== teacherId);
   
   for (let i = 1; i <= count; i++) {

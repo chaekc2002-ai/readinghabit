@@ -7,7 +7,8 @@ import {
   clearTeacherData,
   isTeacherLoggedIn,
   getCurrentTeacherId,
-  getTeacherName
+  getTeacherName,
+  getTeacherClassCode
 } from '../utils/mockData';
 import { BarChart3, Users, Clock, AlertTriangle, Download, ChevronDown, ChevronUp, Book, ExternalLink } from 'lucide-react';
 
@@ -89,10 +90,10 @@ export default function TeacherDashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1>{teacherName} 선생님 대시보드</h1>
-          <p style={{ color: 'var(--color-text-light)' }}>우리 반 전체 학생의 통계를 한눈에 확인하세요. (학급 코드: <strong>{teacherId}</strong>)</p>
+          <p style={{ color: 'var(--color-text-light)' }}>우리 반 전체 학생의 통계를 한눈에 확인하세요. (학급 코드: <strong>{getTeacherClassCode(teacherId)}</strong>)</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => window.open(`/board/${teacherId}`, '_blank')} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button onClick={() => window.open(`/board/${getTeacherClassCode(teacherId)}`, '_blank')} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <ExternalLink size={18} /> 학생 보드 열기
           </button>
           <button onClick={handleExport} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

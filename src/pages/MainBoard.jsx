@@ -1,24 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getStudentsByTeacher, getTimer, startTimer, stopTimer } from '../utils/mockData';
-import { Play, Square, BookPlus, Clock, ArrowLeft } from 'lucide-react';
+import { getStudentsByTeacher, getTimer, startTimer, stopTimer, getTeacherIdByClassCode } from '../utils/mockData';
+import { Play, Square, Clock, ArrowLeft } from 'lucide-react';
 
 export default function MainBoard() {
   const navigate = useNavigate();
-  const { teacherId } = useParams();
+  const { classCode } = useParams();
   const [users, setUsers] = useState([]);
   const [timers, setTimers] = useState({});
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
+    if (!classCode) {
+      navigate('/');
+      return;
+    }
+    
+    const teacherId = getTeacherIdByClassCode(classCode);
     if (!teacherId) {
+      alert('존재하지 않는 학급 코드입니다.');
       navigate('/');
       return;
     }
     
     const loadedUsers = getStudentsByTeacher(teacherId);
     if (loadedUsers.length === 0) {
-      alert('해당 교사의 학급 데이터가 없거나 잘못된 학급 코드입니다.');
+      alert('해당 교사의 학급 데이터가 없습니다. 교사 계정에서 초기 설정을 진행해주세요.');
       navigate('/');
       return;
     }
@@ -40,7 +47,7 @@ export default function MainBoard() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [teacherId, navigate]);
+  }, [classCode, navigate]);
 
   const handleToggleTimer = (userId, isRunning) => {
     if (isRunning) {
@@ -60,12 +67,12 @@ export default function MainBoard() {
             className="btn btn-outline" 
             style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
           >
-            <ArrowLeft size={16} /> 나가기
+            <ArrowLeft size={16} /> 홈으로
           </button>
-          <h1 style={{ color: 'var(--color-primary)' }}>독서 타이머 보드</h1>
-          <p style={{ color: 'var(--color-text-light)' }}>내 번호를 찾아 독서 시간을 기록해보세요!</p>
+          <h1 style={{ color: 'var(--color-primary)' }}>학급 타이머 보드</h1>
+          <p style={{ color: 'var(--color-text-light)' }}>학급 코드: <strong>{classCode}</strong></p>
         </div>
-        <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-text-light)' }}>
+        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-text-light)' }}>
           {now.toLocaleTimeString()}
         </div>
       </div>
@@ -84,33 +91,25 @@ export default function MainBoard() {
           const displaySecs = currentTotalSecs % 60;
 
           return (
-            <div key={user.id} className={`card ${isRunning ? 'timer-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                <strong style={{ fontSize: '1.2rem' }}>{user.displayName}</strong>
-                <Clock size={20} style={{ opacity: isRunning ? 1 : 0.3 }} />
+            <div key={user.id} className={`card ${isRunning ? 'timer-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <strong style={{ fontSize: '1.4rem' }}>{user.displayName}</strong>
+                <Clock size={24} style={{ opacity: isRunning ? 1 : 0.3 }} />
               </div>
               
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', textAlign: 'center', margin: '1rem 0', display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
-                {displayMins}<span style={{ fontSize: '1rem', fontWeight: 'normal', margin: '0 4px' }}>분</span>
-                {displaySecs}<span style={{ fontSize: '1rem', fontWeight: 'normal', marginLeft: '4px' }}>초</span>
+              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', textAlign: 'center', margin: '1rem 0', display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+                {displayMins}<span style={{ fontSize: '1.2rem', fontWeight: 'normal', margin: '0 4px' }}>분</span>
+                {displaySecs}<span style={{ fontSize: '1.2rem', fontWeight: 'normal', marginLeft: '4px' }}>초</span>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
+              <div style={{ display: 'flex', marginTop: 'auto' }}>
                 <button 
                   onClick={() => handleToggleTimer(user.id, isRunning)} 
                   className={`btn ${isRunning ? '' : 'btn-primary'}`} 
-                  style={{ flex: 1, padding: '0.5rem', fontSize: '1rem', background: isRunning ? '#ff6b6b' : '', color: isRunning ? 'white' : '' }}
+                  style={{ width: '100%', padding: '1rem', fontSize: '1.2rem', background: isRunning ? '#ff6b6b' : '', color: isRunning ? 'white' : '' }}
                 >
-                  {isRunning ? <Square size={16} /> : <Play size={16} />}
+                  {isRunning ? <Square size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> : <Play size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />}
                   {isRunning ? '종료' : '시작'}
-                </button>
-                <button 
-                  onClick={() => navigate(`/board/${teacherId}/add-book/${user.id}`)}
-                  className="btn btn-outline" 
-                  style={{ padding: '0.5rem', borderColor: isRunning ? 'rgba(255,255,255,0.5)' : 'var(--color-secondary)', color: isRunning ? 'white' : 'var(--color-text)' }}
-                  title="책 기록하기"
-                >
-                  <BookPlus size={18} />
                 </button>
               </div>
             </div>

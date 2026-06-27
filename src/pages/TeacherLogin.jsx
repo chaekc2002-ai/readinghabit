@@ -9,6 +9,7 @@ export default function TeacherLogin() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [classCode, setClassCode] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
@@ -23,11 +24,11 @@ export default function TeacherLogin() {
         setError(res.message);
       }
     } else {
-      if (!name) {
-        setError('이름을 입력해주세요.');
+      if (!name || !classCode) {
+        setError('모든 항목을 입력해주세요.');
         return;
       }
-      const res = registerTeacher(id, password, name);
+      const res = registerTeacher(id, password, name, classCode);
       if (res.success) {
         loginTeacher(id, password);
         navigate('/teacher/dashboard');
@@ -58,29 +59,42 @@ export default function TeacherLogin() {
 
         <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
           {!isLogin && (
-            <div className="input-group" style={{ marginBottom: '1rem' }}>
-              <label>이름 (선생님 성함)</label>
-              <input
-                type="text"
-                className="input-field"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="예: 홍길동"
-                required={!isLogin}
-              />
-            </div>
+            <>
+              <div className="input-group" style={{ marginBottom: '1rem' }}>
+                <label>이름 (선생님 성함)</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="예: 홍길동"
+                  required={!isLogin}
+                />
+              </div>
+              <div className="input-group" style={{ marginBottom: '1rem' }}>
+                <label>학급 코드</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={classCode}
+                  onChange={(e) => setClassCode(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                  placeholder="예: class1 (영문, 숫자만)"
+                  required={!isLogin}
+                />
+                <small style={{ color: '#888', display: 'block', marginTop: '4px' }}>* 학생들이 이 코드를 입력하여 학급에 접속합니다.</small>
+              </div>
+            </>
           )}
           <div className="input-group" style={{ marginBottom: '1rem' }}>
-            <label>아이디 (학급 코드로 사용됨)</label>
+            <label>아이디</label>
             <input
               type="text"
               className="input-field"
               value={id}
               onChange={(e) => setId(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-              placeholder="영문, 숫자만 입력"
+              placeholder="로그인용 아이디"
               required
             />
-            <small style={{ color: '#888', display: 'block', marginTop: '4px' }}>* 이 아이디를 학생들이 입력하여 보드에 접속합니다.</small>
           </div>
           <div className="input-group" style={{ marginBottom: '2rem' }}>
             <label>비밀번호</label>

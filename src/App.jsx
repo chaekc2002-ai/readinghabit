@@ -5,9 +5,10 @@ import Landing from './pages/Landing';
 import TeacherLogin from './pages/TeacherLogin';
 import Setup from './pages/Setup';
 import MainBoard from './pages/MainBoard';
-import AddBook from './pages/AddBook';
 import TeacherDashboard from './pages/TeacherDashboard';
-import { isTeacherLoggedIn, isSetupDone, getCurrentTeacherId } from './utils/mockData';
+import StudentLogin from './pages/StudentLogin';
+import StudentDashboard from './pages/StudentDashboard';
+import { isTeacherLoggedIn } from './utils/mockData';
 
 function App() {
   return (
@@ -25,9 +26,12 @@ function App() {
             <Route path="/teacher/setup" element={<Setup />} />
             <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
 
-            {/* Student Board Routes */}
-            <Route path="/board/:teacherId" element={<MainBoard />} />
-            <Route path="/board/:teacherId/add-book/:studentId" element={<AddBook />} />
+            {/* Student Timer Board (Kiosk) */}
+            <Route path="/board/:classCode" element={<MainBoard />} />
+            
+            {/* Student Individual Dashboard */}
+            <Route path="/student/login/:classCode" element={<StudentLogin />} />
+            <Route path="/student/dashboard/:studentId" element={<StudentDashboard />} />
             
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
