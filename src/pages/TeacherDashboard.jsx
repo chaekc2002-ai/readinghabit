@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   getAllBooksByTeacher, 
   getStudentsByTeacher, 
@@ -133,9 +133,9 @@ export default function TeacherDashboard() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '1rem' }}>
-          <button onClick={() => window.open(`/board/${classCode}`, '_blank')} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Link to={`/board/${classCode}`} target="_blank" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
             <ExternalLink size={18} /> 학생 보드 열기
-          </button>
+          </Link>
           <button onClick={handleExport} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Download size={18} /> CSV 내보내기
           </button>
