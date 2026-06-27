@@ -9,7 +9,6 @@ export default function TeacherLogin() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [classCode, setClassCode] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
@@ -24,11 +23,11 @@ export default function TeacherLogin() {
         setError(res.message);
       }
     } else {
-      if (!name || !classCode) {
+      if (!name) {
         setError('모든 항목을 입력해주세요.');
         return;
       }
-      const res = registerTeacher(id, password, name, classCode);
+      const res = registerTeacher(id, password, name);
       if (res.success) {
         loginTeacher(id, password);
         navigate('/teacher/dashboard');
@@ -70,18 +69,6 @@ export default function TeacherLogin() {
                   placeholder="예: 홍길동"
                   required={!isLogin}
                 />
-              </div>
-              <div className="input-group" style={{ marginBottom: '1rem' }}>
-                <label>학급 코드</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  value={classCode}
-                  onChange={(e) => setClassCode(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-                  placeholder="예: class1 (영문, 숫자만)"
-                  required={!isLogin}
-                />
-                <small style={{ color: '#888', display: 'block', marginTop: '4px' }}>* 학생들이 이 코드를 입력하여 학급에 접속합니다.</small>
               </div>
             </>
           )}

@@ -8,9 +8,10 @@ import {
   isTeacherLoggedIn,
   getCurrentTeacherId,
   getTeacherName,
-  getTeacherClassCode
+  getTeacherClassCode,
+  updateClassCode
 } from '../utils/mockData';
-import { BarChart3, Users, Clock, AlertTriangle, Download, ChevronDown, ChevronUp, Book, ExternalLink } from 'lucide-react';
+import { BarChart3, Users, Clock, AlertTriangle, Download, ChevronDown, ChevronUp, Book, ExternalLink, Edit2, Check, X } from 'lucide-react';
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
@@ -20,6 +21,9 @@ export default function TeacherDashboard() {
   const [expandedStudentId, setExpandedStudentId] = useState(null);
   const [teacherName, setTeacherName] = useState('');
   const [teacherId, setTeacherId] = useState('');
+  const [classCode, setClassCode] = useState('');
+  const [isEditingCode, setIsEditingCode] = useState(false);
+  const [editCodeInput, setEditCodeInput] = useState('');
 
   useEffect(() => {
     if (!isTeacherLoggedIn()) {
@@ -29,6 +33,7 @@ export default function TeacherDashboard() {
     const tId = getCurrentTeacherId();
     setTeacherId(tId);
     setTeacherName(getTeacherName(tId));
+    setClassCode(getTeacherClassCode(tId));
     fetchData(tId);
   }, [navigate]);
 
@@ -85,15 +90,50 @@ export default function TeacherDashboard() {
     setExpandedStudentId(prev => prev === studentId ? null : studentId);
   };
 
+  const handleSaveClassCode = () => {
+    if (!editCodeInput.trim()) return;
+    const res = updateClassCode(teacherId, editCodeInput.trim());
+    if (res.success) {
+      setClassCode(editCodeInput.trim());
+      setIsEditingCode(false);
+    } else {
+      alert(res.message);
+    }
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1>{teacherName} 선생님 대시보드</h1>
-          <p style={{ color: 'var(--color-text-light)' }}>우리 반 전체 학생의 통계를 한눈에 확인하세요. (학급 코드: <strong>{getTeacherClassCode(teacherId)}</strong>)</p>
+          <div style={{ color: 'var(--color-text-light)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <span>우리 반 전체 학생의 통계를 한눈에 확인하세요. (학급 코드:</span>
+            {isEditingCode ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <input 
+                  type="text" 
+                  value={editCodeInput} 
+                  onChange={(e) => setEditCodeInput(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))} 
+                  style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                  placeholder="영문,숫자"
+                  autoFocus
+                />
+                <button onClick={handleSaveClassCode} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)' }}><Check size={18} /></button>
+                <button onClick={() => setIsEditingCode(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff6b6b' }}><X size={18} /></button>
+              </div>
+            ) : (
+              <strong style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                {classCode} 
+                <button onClick={() => { setEditCodeInput(classCode); setIsEditingCode(true); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex' }} title="학급 코드 변경">
+                  <Edit2 size={14} />
+                </button>
+              </strong>
+            )}
+            <span>)</span>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => window.open(`/board/${getTeacherClassCode(teacherId)}`, '_blank')} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <button onClick={() => window.open(`/board/${classCode}`, '_blank')} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <ExternalLink size={18} /> 학생 보드 열기
           </button>
           <button onClick={handleExport} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

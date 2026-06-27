@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { setupStudents, isSetupDone, isTeacherLoggedIn, getCurrentTeacherId } from '../utils/mockData';
+import { setupStudents, isSetupDone, isTeacherLoggedIn, getCurrentTeacherId, getTeacherClassCode, updateClassCode } from '../utils/mockData';
 import { Users, AlertCircle } from 'lucide-react';
 
 export default function Setup() {
   const navigate = useNavigate();
   const [count, setCount] = useState('');
+  const [classCode, setClassCode] = useState('');
   
   useEffect(() => {
     if (!isTeacherLoggedIn()) {
@@ -16,14 +17,26 @@ export default function Setup() {
     const teacherId = getCurrentTeacherId();
     if (isSetupDone(teacherId)) {
       navigate('/teacher/dashboard');
+    } else {
+      const code = getTeacherClassCode(teacherId);
+      if (code) setClassCode(code);
     }
   }, [navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!classCode.trim()) {
+      alert('학급 코드를 입력해주세요.');
+      return;
+    }
     const num = parseInt(count, 10);
     if (num > 0 && num <= 50) {
       const teacherId = getCurrentTeacherId();
+      const res = updateClassCode(teacherId, classCode.trim());
+      if (!res.success) {
+        alert(res.message);
+        return;
+      }
       setupStudents(teacherId, num);
       navigate('/teacher/dashboard');
     } else {
@@ -41,6 +54,21 @@ export default function Setup() {
         </p>
 
         <form onSubmit={handleSubmit}>
+          <div className="input-group" style={{ textAlign: 'left', marginBottom: '1rem' }}>
+            <label htmlFor="classCode">학급 코드</label>
+            <input
+              type="text"
+              id="classCode"
+              className="input-field"
+              value={classCode}
+              onChange={(e) => setClassCode(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+              placeholder="예: class1 (영문, 숫자만)"
+              required
+              autoFocus
+              style={{ fontSize: '1.2rem', padding: '1rem' }}
+            />
+            <small style={{ color: '#888', display: 'block', marginTop: '4px' }}>* 학생들이 이 코드를 입력하여 학급에 접속합니다.</small>
+          </div>
           <div className="input-group" style={{ textAlign: 'left' }}>
             <label htmlFor="studentCount">우리 반 총 학생 수</label>
             <input
@@ -53,7 +81,6 @@ export default function Setup() {
               min="1"
               max="50"
               required
-              autoFocus
               style={{ fontSize: '1.5rem', padding: '1rem', textAlign: 'center' }}
             />
           </div>

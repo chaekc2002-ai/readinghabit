@@ -7,17 +7,33 @@ const BOOKS_KEY = 'reading_app_books';
 const USER_TIMERS_KEY = 'reading_app_user_timers';
 
 // -- Teacher Auth --
-export const registerTeacher = (id, password, name, classCode) => {
+export const registerTeacher = (id, password, name, classCode = '') => {
   const teachers = JSON.parse(localStorage.getItem(TEACHERS_KEY) || '[]');
   if (teachers.find(t => t.id === id)) {
     return { success: false, message: '이미 존재하는 아이디입니다.' };
   }
-  if (teachers.find(t => t.classCode === classCode)) {
+  if (classCode && teachers.find(t => t.classCode === classCode)) {
     return { success: false, message: '이미 다른 선생님이 사용 중인 학급 코드입니다.' };
   }
   teachers.push({ id, password, name, classCode });
   localStorage.setItem(TEACHERS_KEY, JSON.stringify(teachers));
   return { success: true };
+};
+
+export const updateClassCode = (teacherId, newCode) => {
+  const teachers = JSON.parse(localStorage.getItem(TEACHERS_KEY) || '[]');
+  
+  if (teachers.find(t => t.classCode === newCode && t.id !== teacherId)) {
+    return { success: false, message: '이미 다른 선생님이 사용 중인 학급 코드입니다.' };
+  }
+  
+  const teacherIndex = teachers.findIndex(t => t.id === teacherId);
+  if (teacherIndex > -1) {
+    teachers[teacherIndex].classCode = newCode;
+    localStorage.setItem(TEACHERS_KEY, JSON.stringify(teachers));
+    return { success: true };
+  }
+  return { success: false, message: '교사 정보를 찾을 수 없습니다.' };
 };
 
 export const loginTeacher = (id, password) => {
