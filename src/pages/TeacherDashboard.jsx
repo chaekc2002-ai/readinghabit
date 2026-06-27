@@ -9,9 +9,10 @@ import {
   getCurrentTeacherId,
   getTeacherName,
   getTeacherClassCode,
-  updateClassCode
+  updateClassCode,
+  deleteBook
 } from '../utils/mockData';
-import { BarChart3, Users, Clock, AlertTriangle, Download, ChevronDown, ChevronUp, Book, ExternalLink, Edit2, Check, X } from 'lucide-react';
+import { BarChart3, Users, Clock, AlertTriangle, Download, ChevronDown, ChevronUp, Book, ExternalLink, Edit2, Check, X, Trash2 } from 'lucide-react';
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
@@ -98,6 +99,13 @@ export default function TeacherDashboard() {
       setIsEditingCode(false);
     } else {
       alert(res.message);
+    }
+  };
+
+  const handleDeleteBook = (bookId, title) => {
+    if (window.confirm(`'${title}' 독서 기록을 정말 삭제하시겠습니까?`)) {
+      deleteBook(bookId);
+      setBooks(getAllBooksByTeacher(teacherId));
     }
   };
 
@@ -221,11 +229,23 @@ export default function TeacherDashboard() {
                       {studentBooks.length === 0 ? (
                         <p style={{ color: '#aaa', fontSize: '0.9rem' }}>아직 등록된 책이 없습니다.</p>
                       ) : (
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                           {[...studentBooks].reverse().map(book => (
-                            <li key={book.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px dashed #eee' }}>
-                              <span>{book.title}</span>
-                              <span style={{ color: '#aaa', fontSize: '0.85rem' }}>{new Date(book.createdAt).toLocaleDateString()}</span>
+                            <li key={book.id} style={{ display: 'flex', flexDirection: 'column', padding: '1rem', border: '1px solid #eaeaea', borderRadius: '8px', background: '#fff' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: book.review ? '0.5rem' : '0' }}>
+                                <span style={{ fontWeight: '500' }}>{book.title}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <span style={{ color: '#aaa', fontSize: '0.85rem' }}>{new Date(book.createdAt).toLocaleDateString()}</span>
+                                  <button onClick={() => handleDeleteBook(book.id, book.title)} style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer', padding: '0.2rem', display: 'flex' }} title="기록 삭제">
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </div>
+                              {book.review && (
+                                <div style={{ fontSize: '0.9rem', color: '#555', background: '#f9f9f9', padding: '0.8rem', borderRadius: '6px', whiteSpace: 'pre-wrap', marginTop: '0.5rem' }}>
+                                  {book.review}
+                                </div>
+                              )}
                             </li>
                           ))}
                         </ul>

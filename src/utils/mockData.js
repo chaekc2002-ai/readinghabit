@@ -118,12 +118,13 @@ export const getAllBooksByTeacher = (teacherId) => {
   return books.filter(b => students.includes(b.userId));
 };
 
-export const addBook = (studentId, title) => {
+export const addBook = (studentId, title, review) => {
   const books = JSON.parse(localStorage.getItem(BOOKS_KEY) || '[]');
   const newBook = {
     id: Date.now().toString(),
     userId: studentId,
     title,
+    review,
     createdAt: new Date().toISOString()
   };
   books.push(newBook);

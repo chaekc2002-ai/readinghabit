@@ -9,6 +9,7 @@ export default function StudentDashboard() {
   
   const [student, setStudent] = useState(null);
   const [title, setTitle] = useState('');
+  const [review, setReview] = useState('');
   const [recentBooks, setRecentBooks] = useState([]);
   const [timer, setTimer] = useState({ totalSeconds: 0 });
 
@@ -25,10 +26,13 @@ export default function StudentDashboard() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (title.trim()) {
-      addBook(studentId, title.trim());
+    if (title.trim() && review.trim()) {
+      addBook(studentId, title.trim(), review.trim());
       setRecentBooks(getBooksByStudent(studentId));
       setTitle('');
+      setReview('');
+    } else {
+      alert('책 제목과 기억나는 장면/생각을 모두 입력해주세요.');
     }
   };
 
@@ -88,7 +92,16 @@ export default function StudentDashboard() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="다 읽은 책 제목을 입력하세요"
               required
-              style={{ fontSize: '1.1rem', padding: '1rem' }}
+              style={{ fontSize: '1.1rem', padding: '1rem', marginBottom: '1rem' }}
+            />
+            <textarea
+              className="input-field"
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              placeholder="기억나는 장면이나 내용, 읽고 난 뒤에 든 생각을 자유롭게 적어보세요"
+              required
+              rows={4}
+              style={{ fontSize: '1.1rem', padding: '1rem', resize: 'vertical' }}
             />
           </div>
           <button type="submit" className="btn btn-secondary" style={{ width: '100%', fontSize: '1.1rem', padding: '1rem', marginTop: '1rem' }}>
@@ -101,9 +114,16 @@ export default function StudentDashboard() {
           {recentBooks.length > 0 ? (
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {[...recentBooks].reverse().map(book => (
-                <li key={book.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: '#fdfdfd', borderRadius: '8px', border: '1px solid #eaeaea' }}>
-                  <span style={{ fontWeight: '500', fontSize: '1.1rem' }}>{book.title}</span>
-                  <span style={{ color: '#888', fontSize: '0.9rem' }}>{new Date(book.createdAt).toLocaleDateString()}</span>
+                <li key={book.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', background: '#fdfdfd', borderRadius: '8px', border: '1px solid #eaeaea' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: '500', fontSize: '1.1rem' }}>{book.title}</span>
+                    <span style={{ color: '#888', fontSize: '0.9rem' }}>{new Date(book.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  {book.review && (
+                    <div style={{ padding: '0.8rem', background: '#f5f5f5', borderRadius: '6px', fontSize: '0.95rem', color: '#555', whiteSpace: 'pre-wrap' }}>
+                      {book.review}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
