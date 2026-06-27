@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { setupStudents, isSetupDone } from '../utils/mockData';
+import { setupStudents, isSetupDone, isTeacherLoggedIn, getCurrentTeacherId } from '../utils/mockData';
 import { Users, AlertCircle } from 'lucide-react';
 
 export default function Setup() {
@@ -8,8 +8,14 @@ export default function Setup() {
   const [count, setCount] = useState('');
   
   useEffect(() => {
-    if (isSetupDone()) {
-      navigate('/board');
+    if (!isTeacherLoggedIn()) {
+      navigate('/teacher/login');
+      return;
+    }
+    
+    const teacherId = getCurrentTeacherId();
+    if (isSetupDone(teacherId)) {
+      navigate('/teacher/dashboard');
     }
   }, [navigate]);
 
@@ -17,8 +23,9 @@ export default function Setup() {
     e.preventDefault();
     const num = parseInt(count, 10);
     if (num > 0 && num <= 50) {
-      setupStudents(num);
-      navigate('/board');
+      const teacherId = getCurrentTeacherId();
+      setupStudents(teacherId, num);
+      navigate('/teacher/dashboard');
     } else {
       alert('학생 수는 1에서 50 사이의 숫자로 입력해주세요.');
     }
@@ -30,7 +37,7 @@ export default function Setup() {
         <Users size={64} color="var(--color-primary)" style={{ margin: '0 auto 1.5rem', opacity: 0.8 }} />
         <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>학급 초기 설정</h1>
         <p style={{ color: 'var(--color-text-light)', marginBottom: '2rem' }}>
-          전자칠판(키오스크)에서 사용할 학생 타이머 개수를 설정합니다.
+          우리 반 학생들의 독서 기록을 관리하기 위한 타이머를 생성합니다.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -52,13 +59,13 @@ export default function Setup() {
           </div>
           
           <button type="submit" className="btn btn-primary" style={{ width: '100%', fontSize: '1.2rem', padding: '1rem', marginTop: '1rem' }}>
-            타이머 보드 생성하기
+            학생 목록 생성하기
           </button>
         </form>
 
         <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center', color: '#ff9d97', fontSize: '0.9rem' }}>
           <AlertCircle size={16} />
-          설정을 완료하면 이전 데이터는 초기화됩니다.
+          설정을 완료하면 현재 교사 계정의 이전 학생 데이터는 초기화됩니다.
         </div>
       </div>
     </div>

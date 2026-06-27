@@ -1,21 +1,28 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAllUsers, getTimer, startTimer, stopTimer, isSetupDone } from '../utils/mockData';
-import { Play, Square, BookPlus, Clock } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getStudentsByTeacher, getTimer, startTimer, stopTimer } from '../utils/mockData';
+import { Play, Square, BookPlus, Clock, ArrowLeft } from 'lucide-react';
 
 export default function MainBoard() {
   const navigate = useNavigate();
+  const { teacherId } = useParams();
   const [users, setUsers] = useState([]);
   const [timers, setTimers] = useState({});
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    if (!isSetupDone()) {
-      navigate('/setup');
+    if (!teacherId) {
+      navigate('/');
       return;
     }
     
-    const loadedUsers = getAllUsers();
+    const loadedUsers = getStudentsByTeacher(teacherId);
+    if (loadedUsers.length === 0) {
+      alert('해당 교사의 학급 데이터가 없거나 잘못된 학급 코드입니다.');
+      navigate('/');
+      return;
+    }
+
     setUsers(loadedUsers);
     
     const fetchTimers = () => {
@@ -33,7 +40,7 @@ export default function MainBoard() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [navigate]);
+  }, [teacherId, navigate]);
 
   const handleToggleTimer = (userId, isRunning) => {
     if (isRunning) {
@@ -46,8 +53,15 @@ export default function MainBoard() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
+          <button 
+            onClick={() => navigate('/')} 
+            className="btn btn-outline" 
+            style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
+          >
+            <ArrowLeft size={16} /> 나가기
+          </button>
           <h1 style={{ color: 'var(--color-primary)' }}>독서 타이머 보드</h1>
           <p style={{ color: 'var(--color-text-light)' }}>내 번호를 찾아 독서 시간을 기록해보세요!</p>
         </div>
@@ -91,7 +105,7 @@ export default function MainBoard() {
                   {isRunning ? '종료' : '시작'}
                 </button>
                 <button 
-                  onClick={() => navigate(`/add-book/${user.id}`)}
+                  onClick={() => navigate(`/board/${teacherId}/add-book/${user.id}`)}
                   className="btn btn-outline" 
                   style={{ padding: '0.5rem', borderColor: isRunning ? 'rgba(255,255,255,0.5)' : 'var(--color-secondary)', color: isRunning ? 'white' : 'var(--color-text)' }}
                   title="책 기록하기"

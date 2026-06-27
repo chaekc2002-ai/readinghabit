@@ -1,20 +1,44 @@
-import { Link } from 'react-router-dom';
-import { BookOpen, Settings } from 'lucide-react';
-import { isSetupDone } from '../utils/mockData';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { BookOpen, LogOut } from 'lucide-react';
+import { isTeacherLoggedIn, logoutTeacher, getTeacherName, getCurrentTeacherId } from '../utils/mockData';
 
 export default function Header() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isBoardMode = location.pathname.startsWith('/board');
+  const loggedIn = isTeacherLoggedIn();
+
+  const handleLogout = () => {
+    logoutTeacher();
+    navigate('/');
+  };
+
   return (
     <header className="header">
-      <div className="header-content">
+      <div className="header-container">
         <Link to="/" className="logo">
-          <BookOpen color="var(--color-primary)" />
-          행복 독서 보드
+          <BookOpen size={28} />
+          <span>우당탕탕 독서 기록장</span>
         </Link>
         <nav className="nav-links">
-          {isSetupDone() && (
-            <Link to="/teacher" className="btn btn-outline" style={{padding: '0.5rem 1rem'}}>
-              <Settings size={18} style={{ marginRight: '0.5rem' }} /> 교사용 관리
-            </Link>
+          {isBoardMode ? (
+            <Link to="/" className="nav-link">홈으로</Link>
+          ) : (
+            <>
+              {loggedIn ? (
+                <>
+                  <span style={{ color: 'var(--color-text-light)', marginRight: '1rem' }}>
+                    {getTeacherName(getCurrentTeacherId())} 선생님
+                  </span>
+                  <Link to="/teacher/dashboard" className="nav-link">대시보드</Link>
+                  <button onClick={handleLogout} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.8rem' }}>
+                    <LogOut size={16} /> 로그아웃
+                  </button>
+                </>
+              ) : (
+                <Link to="/teacher/login" className="nav-link">교사 로그인</Link>
+              )}
+            </>
           )}
         </nav>
       </div>

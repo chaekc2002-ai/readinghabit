@@ -1,7 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { getAllBooks, getAllUsers, getAllTimers, clearAllData } from '../utils/mockData';
-import { BarChart3, Users, Clock, AlertTriangle, Download, ChevronDown, ChevronUp, Book, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  getAllBooksByTeacher, 
+  getStudentsByTeacher, 
+  getAllTimersByTeacher, 
+  clearTeacherData,
+  isTeacherLoggedIn,
+  getCurrentTeacherId,
+  getTeacherName
+} from '../utils/mockData';
+import { BarChart3, Users, Clock, AlertTriangle, Download, ChevronDown, ChevronUp, Book, ExternalLink } from 'lucide-react';
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
@@ -9,21 +17,30 @@ export default function TeacherDashboard() {
   const [users, setUsers] = useState([]);
   const [timers, setTimers] = useState({});
   const [expandedStudentId, setExpandedStudentId] = useState(null);
+  const [teacherName, setTeacherName] = useState('');
+  const [teacherId, setTeacherId] = useState('');
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!isTeacherLoggedIn()) {
+      navigate('/teacher/login');
+      return;
+    }
+    const tId = getCurrentTeacherId();
+    setTeacherId(tId);
+    setTeacherName(getTeacherName(tId));
+    fetchData(tId);
+  }, [navigate]);
 
-  const fetchData = () => {
-    setBooks(getAllBooks());
-    setUsers(getAllUsers());
-    setTimers(getAllTimers());
+  const fetchData = (tId) => {
+    setBooks(getAllBooksByTeacher(tId));
+    setUsers(getStudentsByTeacher(tId));
+    setTimers(getAllTimersByTeacher(tId));
   };
 
   const handleClearData = () => {
-    if (window.confirm('경고: 모든 학생의 데이터가 초기화되고 학생 수 설정 화면으로 이동합니다. 정말 초기화하시겠습니까?')) {
-      clearAllData();
-      navigate('/setup');
+    if (window.confirm('경고: 우리 반 학생들의 데이터가 초기화되고 학생 수 설정 화면으로 이동합니다. 정말 초기화하시겠습니까?')) {
+      clearTeacherData(teacherId);
+      navigate('/teacher/setup');
     }
   };
 
@@ -47,7 +64,7 @@ export default function TeacherDashboard() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `reading_data_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `${teacherName}_reading_data_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -71,15 +88,18 @@ export default function TeacherDashboard() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1>교사 대시보드</h1>
-          <p style={{ color: 'var(--color-text-light)' }}>전체 학생의 통계를 한눈에 확인하세요.</p>
+          <h1>{teacherName} 선생님 대시보드</h1>
+          <p style={{ color: 'var(--color-text-light)' }}>우리 반 전체 학생의 통계를 한눈에 확인하세요. (학급 코드: <strong>{teacherId}</strong>)</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <button onClick={handleExport} className="btn btn-secondary">
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => window.open(`/board/${teacherId}`, '_blank')} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <ExternalLink size={18} /> 학생 보드 열기
+          </button>
+          <button onClick={handleExport} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Download size={18} /> CSV 내보내기
           </button>
-          <button onClick={handleClearData} className="btn btn-outline" style={{ color: '#ff6b6b', borderColor: '#ff6b6b' }}>
-            <AlertTriangle size={18} /> 학생 수 재설정 및 초기화
+          <button onClick={handleClearData} className="btn btn-outline" style={{ color: '#ff6b6b', borderColor: '#ff6b6b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertTriangle size={18} /> 학급 재설정
           </button>
         </div>
       </div>
